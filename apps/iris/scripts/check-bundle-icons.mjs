@@ -35,6 +35,16 @@ const sha256 = async (filePath) => {
   return createHash('sha256').update(data).digest('hex');
 };
 
+function commandExists(command, args = ['--help']) {
+  const result = spawnSync(command, args, {
+    cwd: appRoot,
+    stdio: 'ignore',
+  });
+  return !result.error;
+}
+
+const canNormalizeIcns = commandExists('iconutil');
+
 const normalizedIcnsHash = async (filePath) => {
   const tempDir = await mkdtemp(path.join(tmpdir(), 'iris-bundle-iconset-'));
   const iconsetDir = path.join(tempDir, 'generated.iconset');
@@ -96,7 +106,9 @@ for (const file of generatedIconFiles) {
   }
 
   const [expectedHash, actualHash] = file.expected.endsWith('.icns')
-    ? await Promise.all([normalizedIcnsHash(file.expected), normalizedIcnsHash(file.actual)])
+    ? canNormalizeIcns
+      ? await Promise.all([normalizedIcnsHash(file.expected), normalizedIcnsHash(file.actual)])
+      : await Promise.all([sha256(file.expected), sha256(file.actual)])
     : await Promise.all([sha256(file.expected), sha256(file.actual)]);
   if (expectedHash !== actualHash) {
     mismatches.push(path.relative(appRoot, file.expected));

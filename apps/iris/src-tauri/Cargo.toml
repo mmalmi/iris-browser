@@ -1,6 +1,6 @@
 [package]
 name = "iris"
-version = "0.1.2"
+version = "0.1.4"
 description = "Iris - Thin native shell with embedded htree daemon"
 authors = ["Martti Malmi"]
 license = "MIT"
@@ -37,7 +37,7 @@ hashtree-core = { path = "../../../rust/crates/hashtree-core" }
 hashtree-fs = { path = "../../../rust/crates/hashtree-fs" }
 hashtree-blossom = { path = "../../../rust/crates/hashtree-blossom", features = ["store"] }
 hashtree-resolver = { path = "../../../rust/crates/hashtree-resolver", features = ["nostr"] }
-hashtree-cli = { path = "../../../rust/crates/hashtree-cli" }
+hashtree-cli = { path = "../../../rust/crates/hashtree-cli", default-features = false, features = ["p2p", "lmdb"] }
 tokio = { version = "1", features = ["sync", "rt-multi-thread"] }
 nostr-sdk = { version = "0.35", default-features = false }
 hex = "0.4"
