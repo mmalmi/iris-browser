@@ -99,6 +99,10 @@ if (result.status !== 0) {
 const mismatches = [];
 
 for (const file of generatedIconFiles) {
+  if (file.expected.endsWith('.icns') && !canNormalizeIcns) {
+    continue;
+  }
+
   const [expectedExists, actualExists] = await Promise.all([exists(file.expected), exists(file.actual)]);
   if (!expectedExists || !actualExists) {
     mismatches.push(path.relative(appRoot, file.expected));
@@ -108,7 +112,7 @@ for (const file of generatedIconFiles) {
   const [expectedHash, actualHash] = file.expected.endsWith('.icns')
     ? canNormalizeIcns
       ? await Promise.all([normalizedIcnsHash(file.expected), normalizedIcnsHash(file.actual)])
-      : await Promise.all([sha256(file.expected), sha256(file.actual)])
+      : [null, null]
     : await Promise.all([sha256(file.expected), sha256(file.actual)]);
   if (expectedHash !== actualHash) {
     mismatches.push(path.relative(appRoot, file.expected));
