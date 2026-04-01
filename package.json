@@ -1,0 +1,27 @@
+{
+  "name": "iris-browser",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "dev": "pnpm --dir apps/iris dev",
+    "build": "pnpm --dir apps/iris build",
+    "test": "pnpm --dir apps/iris test",
+    "test:release": "pnpm --dir apps/iris test:release",
+    "test:icons": "pnpm --dir apps/iris test:icons",
+    "test:zapstore": "pnpm --dir apps/iris test:zapstore",
+    "test:e2e": "pnpm --dir apps/iris test:e2e",
+    "test:rust": "pnpm --dir apps/iris test:rust",
+    "tauri:dev": "pnpm --dir apps/iris tauri:dev",
+    "tauri:build": "pnpm --dir apps/iris tauri:build",
+    "tauri:build:android": "pnpm --dir apps/iris tauri:build:android",
+    "release:native": "pnpm --dir apps/iris release:native",
+    "test:native:linux": "pnpm --dir apps/iris test:native:linux",
+    "test:native:docker": "pnpm --dir apps/iris test:native:docker"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

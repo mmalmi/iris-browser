@@ -1,0 +1,627 @@
+use clap::{Parser, Subcommand, ValueEnum};
+use git_remote_htree::nostr_client::PullRequestStateFilter;
+use std::path::PathBuf;
+
+const CLI_HELP_TEMPLATE: &str = "\
+{about-with-newline}\
+\n{usage-heading} {usage}\n\n\
+Options:\n\
+{options}\
+{after-help}";
+
+#[cfg(feature = "fuse")]
+const CLI_GROUPED_COMMANDS: &str = "\
+\nDaemon Commands:
+  start        Start the hashtree daemon
+  stop         Stop the hashtree daemon
+  status       Show daemon status (peers, storage, etc.)
+  peer         Show connected P2P peers
+
+Content Commands:
+  add          Add file or directory to hashtree (like ipfs add)
+  get          Get/download content by CID
+  cat          Output file content to stdout (like cat)
+  push         Push content to file servers (Blossom)
+  info         Get information about a CID
+
+Storage Commands:
+  pin          Pin a CID
+  unpin        Unpin a CID
+  pins         List all pinned CIDs
+  stats        Get storage statistics
+  gc           Run garbage collection
+  storage      Manage storage limits and eviction
+  mount        Mount a hashtree via FUSE
+
+Publishing & Git Commands:
+  publish      Publish a hash to Nostr under a ref name
+  release      Manage published release trees
+  repos        List published git repositories for yourself or another user
+  pr           Pull request management
+
+Identity & Social Commands:
+  user         Show or set your nostr identity
+  profile      Show or update your Nostr profile
+  follow       Follow a user (adds to your contact list)
+  unfollow     Unfollow a user (removes from your contact list)
+  following    List users you follow
+  mute         Mute a user (adds to your mute list)
+  unmute       Unmute a user (removes from your mute list)
+  muted        List users you mute
+  socialgraph  Social graph utilities
+
+Wallet Commands:
+  cashu        Manage Cashu wallet and accepted mints
+
+General Commands:
+  help         Print this message or the help of the given subcommand(s)";
+
+#[cfg(not(feature = "fuse"))]
+const CLI_GROUPED_COMMANDS: &str = "\
+\nDaemon Commands:
+  start        Start the hashtree daemon
+  stop         Stop the hashtree daemon
+  status       Show daemon status (peers, storage, etc.)
+  peer         Show connected P2P peers
+
+Content Commands:
+  add          Add file or directory to hashtree (like ipfs add)
+  get          Get/download content by CID
+  cat          Output file content to stdout (like cat)
+  push         Push content to file servers (Blossom)
+  info         Get information about a CID
+
+Storage Commands:
+  pin          Pin a CID
+  unpin        Unpin a CID
+  pins         List all pinned CIDs
+  stats        Get storage statistics
+  gc           Run garbage collection
+  storage      Manage storage limits and eviction
+
+Publishing & Git Commands:
+  publish      Publish a hash to Nostr under a ref name
+  release      Manage published release trees
+  repos        List published git repositories for yourself or another user
+  pr           Pull request management
+
+Identity & Social Commands:
+  user         Show or set your nostr identity
+  profile      Show or update your Nostr profile
+  follow       Follow a user (adds to your contact list)
+  unfollow     Unfollow a user (removes from your contact list)
+  following    List users you follow
+  mute         Mute a user (adds to your mute list)
+  unmute       Unmute a user (removes from your mute list)
+  muted        List users you mute
+  socialgraph  Social graph utilities
+
+Wallet Commands:
+  cashu        Manage Cashu wallet and accepted mints
+
+General Commands:
+  help         Print this message or the help of the given subcommand(s)";
+
+#[derive(Parser)]
+#[command(name = "htree")]
+#[command(version)]
+#[command(about = "Content-addressed filesystem", long_about = None)]
+#[command(help_template = CLI_HELP_TEMPLATE)]
+#[command(after_help = CLI_GROUPED_COMMANDS)]
+pub(crate) struct Cli {
+    /// Data directory (default: ~/.hashtree/data)
+    #[arg(long, global = true, env = "HTREE_DATA_DIR")]
+    pub(crate) data_dir: Option<PathBuf>,
+
+    #[command(subcommand)]
+    pub(crate) command: Commands,
+}
+
+impl Cli {
+    /// Get the data directory, defaulting to ~/.hashtree/data
+    pub(crate) fn data_dir(&self) -> PathBuf {
+        self.data_dir
+            .clone()
+            .unwrap_or_else(|| hashtree_cli::config::get_hashtree_dir().join("data"))
+    }
+}
+
+#[derive(Subcommand)]
+pub(crate) enum Commands {
+    // ── Daemon ──────────────────────────────────────────────
+    /// Start the hashtree daemon
+    Start {
+        #[arg(long, default_value = "127.0.0.1:8080")]
+        addr: String,
+        /// Override Nostr relays (comma-separated)
+        #[arg(long)]
+        relays: Option<String>,
+        /// Run in background (daemonize)
+        #[arg(long)]
+        daemon: bool,
+        /// Log file for daemon mode (default: ~/.hashtree/logs/htree.log)
+        #[arg(long, requires = "daemon")]
+        log_file: Option<PathBuf>,
+        /// PID file for daemon mode (default: ~/.hashtree/htree.pid)
+        #[arg(long, requires = "daemon")]
+        pid_file: Option<PathBuf>,
+    },
+
+    /// Stop the hashtree daemon
+    Stop {
+        /// PID file (default: ~/.hashtree/htree.pid)
+        #[arg(long)]
+        pid_file: Option<PathBuf>,
+    },
+
+    /// Show daemon status (peers, storage, etc.)
+    Status {
+        /// Daemon address (default: 127.0.0.1:8080)
+        #[arg(long, default_value = "127.0.0.1:8080")]
+        addr: String,
+    },
+
+    /// Show connected P2P peers
+    Peer {
+        /// Daemon address (default: 127.0.0.1:8080)
+        #[arg(long, default_value = "127.0.0.1:8080")]
+        addr: String,
+    },
+
+    // ── Content ─────────────────────────────────────────────
+    /// Add file or directory to hashtree (like ipfs add)
+    Add {
+        /// Path to file or directory
+        path: PathBuf,
+        /// Only compute hash, don't store
+        #[arg(long)]
+        only_hash: bool,
+        /// Store as raw plaintext blobs without CHK encryption
+        #[arg(long = "unencrypted", alias = "public")]
+        unencrypted: bool,
+        /// Include files ignored by .gitignore (default: respect .gitignore)
+        #[arg(long)]
+        no_ignore: bool,
+        /// Publish to Nostr under this ref name (e.g., "mydata" -> npub.../mydata)
+        #[arg(long)]
+        publish: Option<String>,
+        /// Don't push to file servers (local only)
+        #[arg(long)]
+        local: bool,
+    },
+
+    /// Get/download content by CID
+    Get {
+        /// CID to retrieve
+        cid: String,
+        /// Output path (default: current dir, uses CID as filename)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
+
+    /// Output file content to stdout (like cat)
+    Cat {
+        /// CID to read
+        cid: String,
+    },
+
+    /// Push content to file servers (Blossom)
+    Push {
+        /// CID (hash or hash:key) to push
+        cid: String,
+        /// File server URL (overrides config)
+        #[arg(long, short)]
+        server: Option<String>,
+    },
+
+    /// Get information about a CID
+    Info {
+        /// CID to inspect
+        cid: String,
+    },
+
+    // ── Pinning ─────────────────────────────────────────────
+    /// Pin a CID
+    Pin {
+        /// CID to pin
+        cid: String,
+    },
+
+    /// Unpin a CID
+    Unpin {
+        /// CID to unpin
+        cid: String,
+    },
+
+    /// List all pinned CIDs
+    Pins,
+
+    // ── Storage ─────────────────────────────────────────────
+    /// Get storage statistics
+    Stats,
+
+    /// Run garbage collection
+    Gc,
+
+    /// Manage storage limits and eviction
+    Storage {
+        #[command(subcommand)]
+        command: StorageCommands,
+    },
+
+    /// Mount a hashtree via FUSE
+    #[cfg(feature = "fuse")]
+    Mount {
+        /// Target to mount (nhash, npub/tree, or htree:// URL)
+        target: String,
+        /// Mount point directory (defaults to a new ./<target-name> directory)
+        mountpoint: Option<PathBuf>,
+        /// Visibility: public, link-visible, or private
+        #[arg(long)]
+        visibility: Option<String>,
+        /// Link key for link-visible trees (hex)
+        #[arg(long)]
+        link_key: Option<String>,
+        /// Use private visibility (NIP-44 to self)
+        #[arg(long)]
+        private: bool,
+        /// Override Nostr relays (comma-separated)
+        #[arg(long)]
+        relays: Option<String>,
+        /// Allow other users to access the mount
+        #[arg(long)]
+        allow_other: bool,
+    },
+
+    // ── Publishing & Git ────────────────────────────────────
+    /// Publish a hash to Nostr under a ref name
+    Publish {
+        /// The ref name to publish under (e.g., "mydata" -> npub.../mydata)
+        ref_name: String,
+        /// The hash to publish (hex encoded)
+        hash: String,
+        /// Optional decryption key (hex encoded, for encrypted content)
+        #[arg(long)]
+        key: Option<String>,
+    },
+
+    /// Manage published release trees
+    Release {
+        #[command(subcommand)]
+        command: ReleaseCommands,
+    },
+
+    /// List published git repositories for yourself or another user
+    Repos {
+        /// Owner identity (defaults to self). Accepts alias, npub, or hex pubkey.
+        owner: Option<String>,
+    },
+
+    /// Pull request management
+    Pr {
+        #[command(subcommand)]
+        command: PrCommands,
+    },
+
+    // ── Identity & Social ───────────────────────────────────
+    /// Show or set your nostr identity
+    User {
+        /// npub or nsec to set as active identity (omit to show current)
+        identity: Option<String>,
+    },
+
+    /// Show or update your Nostr profile
+    Profile {
+        /// Set display name
+        #[arg(long)]
+        name: Option<String>,
+        /// Set about/bio
+        #[arg(long)]
+        about: Option<String>,
+        /// Set profile picture URL
+        #[arg(long)]
+        picture: Option<String>,
+    },
+
+    /// Follow a user (adds to your contact list)
+    Follow {
+        /// npub of user to follow
+        npub: String,
+    },
+
+    /// Unfollow a user (removes from your contact list)
+    Unfollow {
+        /// npub of user to unfollow
+        npub: String,
+    },
+
+    /// List users you follow
+    Following,
+
+    /// Mute a user (adds to your mute list)
+    Mute {
+        /// npub of user to mute
+        npub: String,
+        /// Optional reason to include in the mute list
+        #[arg(long)]
+        reason: Option<String>,
+    },
+
+    /// Unmute a user (removes from your mute list)
+    Unmute {
+        /// npub of user to unmute
+        npub: String,
+    },
+
+    /// List users you mute
+    Muted,
+
+    /// Social graph utilities
+    Socialgraph {
+        #[command(subcommand)]
+        command: SocialGraphCommands,
+    },
+
+    // ── Wallet ──────────────────────────────────────────────
+    /// Manage Cashu wallet and accepted mints
+    Cashu {
+        #[command(subcommand)]
+        command: CashuCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub(crate) enum PrCommands {
+    /// Create a pull request
+    Create {
+        /// Target repository (git remote alias, npub/reponame, or htree:// URL of the repo to PR into)
+        repo: Option<String>,
+        /// PR title
+        #[arg(long, short)]
+        title: String,
+        /// PR description
+        #[arg(long, short)]
+        description: Option<String>,
+        /// Source branch name (default: current branch)
+        #[arg(long)]
+        branch: Option<String>,
+        /// Target branch (default: master)
+        #[arg(long, default_value = "master")]
+        target_branch: String,
+        /// Clone URL for source repo (default: htree://self/<reponame>)
+        #[arg(long)]
+        clone_url: Option<String>,
+    },
+    /// List pull requests
+    List {
+        /// Target repository (git remote alias, npub/reponame, or htree:// URL)
+        repo: Option<String>,
+        /// PR state filter (default: open)
+        #[arg(long, value_enum, default_value_t = PrListState::Open)]
+        state: PrListState,
+    },
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum)]
+pub(crate) enum PrListState {
+    Open,
+    Applied,
+    Closed,
+    Draft,
+    All,
+}
+
+impl PrListState {
+    pub(crate) fn to_filter(self) -> PullRequestStateFilter {
+        match self {
+            Self::Open => PullRequestStateFilter::Open,
+            Self::Applied => PullRequestStateFilter::Applied,
+            Self::Closed => PullRequestStateFilter::Closed,
+            Self::Draft => PullRequestStateFilter::Draft,
+            Self::All => PullRequestStateFilter::All,
+        }
+    }
+}
+
+#[derive(Subcommand)]
+pub(crate) enum StorageCommands {
+    /// Show storage usage statistics by priority tier
+    Stats,
+    /// List all indexed trees
+    Trees,
+    /// Manually trigger eviction
+    Evict,
+    /// Verify blob integrity and delete corrupted entries
+    Verify {
+        /// Actually delete corrupted entries (default: dry-run)
+        #[arg(long)]
+        delete: bool,
+        /// Also verify R2/S3 storage (slower)
+        #[arg(long)]
+        r2: bool,
+    },
+}
+
+#[derive(Subcommand)]
+pub(crate) enum CashuCommands {
+    /// Show Cashu wallet balances
+    #[command(visible_alias = "status")]
+    Balance {
+        /// Show only one mint
+        #[arg(long)]
+        mint: Option<String>,
+    },
+    /// Create a Cashu top-up quote from the selected mint
+    #[command(visible_alias = "load")]
+    Topup {
+        /// Amount in satoshis
+        amount_sat: u64,
+        /// Mint to use (defaults to configured default mint)
+        #[arg(long)]
+        mint: Option<String>,
+    },
+    /// Manage accepted Cashu mints
+    Mint {
+        #[command(subcommand)]
+        command: CashuMintCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub(crate) enum CashuMintCommands {
+    /// List accepted mints
+    List,
+    /// Add an accepted mint
+    Add {
+        /// Mint base URL
+        url: String,
+        /// Also set as default mint
+        #[arg(long = "default")]
+        make_default: bool,
+    },
+    /// Remove an accepted mint
+    Remove {
+        /// Mint base URL
+        url: String,
+    },
+    /// Set the default mint
+    Default {
+        /// Mint base URL
+        url: String,
+    },
+}
+
+#[derive(Subcommand)]
+pub(crate) enum SocialGraphCommands {
+    /// Filter JSONL Nostr events to those within the social graph
+    Filter {
+        /// Max follow distance to allow (default: config nostr.max_write_distance)
+        #[arg(long)]
+        max_distance: Option<u32>,
+        /// Overmute threshold (muters * threshold > followers)
+        #[arg(long, default_value_t = 1.0)]
+        overmute_threshold: f64,
+    },
+    /// Show local social graph statistics
+    Stats,
+    /// Warm the local social graph without building a post index
+    Warm {
+        /// Warm the social graph for this many seconds
+        #[arg(long, default_value_t = 60)]
+        secs: u64,
+        /// Graph crawl depth to use while warming (default: config nostr.social_graph_crawl_depth)
+        #[arg(long)]
+        crawl_depth: Option<u32>,
+        /// Ignore existing graph frontier state and refetch from the root
+        #[arg(long, default_value_t = false)]
+        full_graph_recrawl: bool,
+        /// Relay URLs to use for this warm run (repeatable, overrides config relays)
+        #[arg(long = "relay")]
+        relays: Vec<String>,
+        /// Relay query author batch size
+        #[arg(long, default_value_t = 64)]
+        author_batch_size: usize,
+        /// Number of relay author batches to fetch concurrently
+        #[arg(long, default_value_t = 4)]
+        concurrent_batches: usize,
+    },
+    /// Save a social graph snapshot (nostr-social-graph binary format)
+    Snapshot {
+        /// Output file path (use "-" for stdout)
+        #[arg(long, short)]
+        out: PathBuf,
+        /// Maximum number of nodes
+        #[arg(long)]
+        max_nodes: Option<usize>,
+        /// Maximum number of edges
+        #[arg(long)]
+        max_edges: Option<usize>,
+        /// Maximum follow distance
+        #[arg(long)]
+        max_distance: Option<u32>,
+        /// Maximum edges per node
+        #[arg(long)]
+        max_edges_per_node: Option<usize>,
+    },
+    /// Rebuild the profile search index from trusted locally stored kind-0 events
+    RebuildProfileIndex,
+    /// Crawl and index Nostr events for authors in the social graph
+    Index {
+        /// Warm the social graph for this many seconds before indexing
+        #[arg(long, default_value_t = 0)]
+        warm_secs: u64,
+        /// Graph crawl depth to use while warming (default: config nostr.social_graph_crawl_depth)
+        #[arg(long)]
+        crawl_depth: Option<u32>,
+        /// Ignore existing graph frontier state and refetch from the root
+        #[arg(long, default_value_t = false)]
+        full_graph_recrawl: bool,
+        /// Maximum follow distance to include in the post index (default: config nostr.social_graph_crawl_depth)
+        #[arg(long)]
+        max_follow_distance: Option<u32>,
+        /// Maximum number of authors to crawl from the graph
+        #[arg(long, default_value_t = 64)]
+        max_authors: usize,
+        /// Maximum live index size in MiB
+        #[arg(long, default_value_t = 256)]
+        max_live_mb: u64,
+        /// Maximum number of kept events per author
+        #[arg(long, default_value_t = 256)]
+        per_author_event_limit: usize,
+        /// Maximum kept bytes per author before the global live cap is applied
+        #[arg(long)]
+        per_author_live_bytes: Option<u64>,
+        /// Relay query author batch size
+        #[arg(long, default_value_t = 64)]
+        author_batch_size: usize,
+        /// Number of graph-crawl author batches to fetch concurrently during warmup
+        #[arg(long, default_value_t = 4)]
+        concurrent_batches: usize,
+        /// Relay fetch timeout in seconds
+        #[arg(long, default_value_t = 10)]
+        fetch_timeout_secs: u64,
+        /// Maximum event size accepted from relays, in bytes
+        #[arg(long)]
+        relay_event_max_bytes: Option<u32>,
+        /// Fetch recent relay pages without author filters and filter locally by social graph
+        #[arg(long, default_value_t = false)]
+        global_relay_scan: bool,
+        /// HTTP URL returning newline-delimited author pubkeys to index
+        #[arg(long)]
+        author_allowlist_url: Option<String>,
+        /// Only use relays that advertise NIP-77 negentropy support via NIP-11
+        #[arg(long, default_value_t = false)]
+        negentropy_only: bool,
+        /// Number of events to request per relay page in global relay scan mode
+        #[arg(long, default_value_t = 1_000)]
+        relay_page_size: usize,
+        /// Maximum pages to fetch per relay in global relay scan mode
+        #[arg(long, default_value_t = 10)]
+        max_relay_pages: usize,
+        /// Stop after seeing at least this many raw relay events
+        #[arg(long)]
+        max_events_seen: Option<usize>,
+        /// Restrict indexing to these kinds (repeatable)
+        #[arg(long = "kind")]
+        kinds: Vec<u16>,
+        /// Relay URLs to use for this index run (repeatable, overrides config relays)
+        #[arg(long = "relay")]
+        relays: Vec<String>,
+    },
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ReleaseCommands {
+    /// Publish a version directory CID into a mutable release tree and repoint latest
+    Publish {
+        /// Mutable release tree name (repo releases usually use "releases/<repo>")
+        tree_name: String,
+        /// Version path within the release tree (for example: "v0.2.3" or "releases/v0.2.3")
+        version_path: String,
+        /// CID or nhash for the release directory to publish
+        cid: String,
+        /// Don't push the updated release root to file servers
+        #[arg(long)]
+        local: bool,
+    },
+}

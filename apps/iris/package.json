@@ -1,0 +1,62 @@
+{
+  "name": "iris",
+  "version": "0.1.2",
+  "license": "MIT",
+  "private": true,
+  "description": "Iris - Native desktop shell with embedded htree daemon",
+  "repository": "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser",
+  "homepage": "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser/apps/iris",
+  "bugs": {
+    "url": "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser?tab=issues"
+  },
+  "packageManager": "pnpm@10.28.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "release:native": "node ./scripts/local-release.mjs",
+    "test": "pnpm run test:release && pnpm run test:icons && pnpm run test:zapstore",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:android": "tauri android build -t aarch64 --apk true --aab false --ci",
+    "generate:icons:bundle-source": "swift ./scripts/generate-bundle-icon.swift",
+    "test:release": "node --test ./tests/local-release-lib.test.mjs ./tests/local-release.test.mjs ./tests/android-build-config.test.mjs",
+    "test:icons": "pnpm run test:icons:bundle && pnpm run test:icons:tray && pnpm run test:icons:mobile",
+    "test:icons:bundle": "node ./scripts/check-bundle-icons.mjs",
+    "test:icons:tray": "node ./scripts/check-tray-icon.mjs",
+    "test:icons:mobile": "node ./scripts/check-icons.mjs",
+    "test:zapstore": "node ./scripts/check-zapstore.mjs",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml --lib",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:native:linux:files": "node ./scripts/tauri-driver-linux-smoke.mjs",
+    "test:native:linux:nip07": "node ./scripts/tauri-driver-linux-nip07-smoke.mjs",
+    "test:native:linux:nip07-live": "IRIS_NIP07_SMOKE_MODE=live node ./scripts/tauri-driver-linux-nip07-smoke.mjs",
+    "test:native:linux:pwa-live": "node ./scripts/tauri-driver-linux-pwa-smoke.mjs",
+    "test:native:linux:social": "node ./scripts/tauri-driver-linux-social-smoke.mjs",
+    "test:native:linux:video": "node ./scripts/tauri-driver-linux-video-smoke.mjs",
+    "test:native:linux": "pnpm run test:native:linux:files && pnpm run test:native:linux:video",
+    "test:native:docker": "bash ./scripts/test-native-linux-docker.sh",
+    "test:native:docker:nip07": "bash ./scripts/test-native-linux-docker.sh pnpm run test:native:linux:nip07",
+    "test:native:docker:nip07-live": "bash ./scripts/test-native-linux-docker.sh pnpm run test:native:linux:nip07-live",
+    "test:native:docker:pwa-live": "bash ./scripts/test-native-linux-docker.sh pnpm run test:native:linux:pwa-live"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.9.1",
+    "@tauri-apps/plugin-autostart": "2.5.1",
+    "minidenticons": "^4.2.1",
+    "nostr-tools": "^2.23.3"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.75",
+    "@playwright/test": "^1.58.1",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tauri-apps/cli": "2.9.6",
+    "@tsconfig/svelte": "^5.0.4",
+    "@unocss/preset-icons": "^66.5.9",
+    "svelte": "^5.16.0",
+    "typescript": "^5.3.0",
+    "unocss": "^66.5.9",
+    "vite": "^6.0.0"
+  }
+}

@@ -1,0 +1,41 @@
+:root {
+  color-scheme: light dark;
+  --surface-0: 245 245 245;
+  --surface-1: 235 235 235;
+  --surface-2: 221 221 221;
+  --surface-3: 187 187 187;
+  --text-1: 26 26 26;
+  --text-2: 85 85 85;
+  --text-3: 153 153 153;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-0: 15 15 15;
+    --surface-1: 24 24 24;
+    --surface-2: 35 35 35;
+    --surface-3: 63 63 63;
+    --text-1: 255 255 255;
+    --text-2: 170 170 170;
+    --text-3: 96 96 96;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: rgb(var(--surface-0));
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: rgb(var(--surface-0));
+  color: rgb(var(--text-1));
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}

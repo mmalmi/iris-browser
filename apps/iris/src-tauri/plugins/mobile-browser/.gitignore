@@ -1,0 +1,3 @@
+android/build/
+android/.tauri/tauri-api/build/
+ios/Package.resolved

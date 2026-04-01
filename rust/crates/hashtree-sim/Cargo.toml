@@ -1,0 +1,42 @@
+[package]
+name = "hashtree-sim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+description = "Simulation tools for hashtree P2P protocols"
+publish = false
+
+[dependencies]
+# Core hashtree crates
+hashtree-core.workspace = true
+hashtree-network = { path = "../hashtree-network" }
+
+# Serialization
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+anyhow = { workspace = true, optional = true }
+async-trait.workspace = true
+
+# Simulation
+rand = "0.8"
+
+# Async runtime
+tokio = { workspace = true, features = ["rt", "rt-multi-thread", "sync", "macros", "time", "net"] }
+
+# WebSocket relay for testing
+axum = { workspace = true }
+futures = { workspace = true }
+
+# Optional dependencies for nostr integration tests
+hashtree-resolver = { path = "../hashtree-resolver", optional = true, features = ["nostr"] }
+nostr-sdk = { workspace = true, optional = true }
+nostr = { workspace = true, optional = true }
+
+[features]
+default = []
+nostr = ["dep:hashtree-resolver", "dep:nostr-sdk", "dep:nostr", "dep:anyhow"]
+
+[dev-dependencies]
