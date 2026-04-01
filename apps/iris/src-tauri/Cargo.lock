@@ -904,6 +904,8 @@ dependencies = [
 [[package]]
 name = "cashu-service"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54df32e3cb7b7721867c2433601fdc0d8b1573e4ff57b6218d631c4e8ed20fdc"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2297,6 +2299,8 @@ dependencies = [
 [[package]]
 name = "git-remote-htree"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ae694b935d5c547335f0fac1ae20010e0b893de5cced4cdd7389347df689930"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2512,6 +2516,8 @@ checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 [[package]]
 name = "hashtree-blossom"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d19fd1804d3912a3313005bd475f52c09820be0f8699e669e22a1ff548bef2c"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -2530,6 +2536,8 @@ dependencies = [
 [[package]]
 name = "hashtree-cli"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88ebbefa80f231e70a9eb50110e39b3fc3f57d3f5858191b453238e83b348ffc"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2587,6 +2595,8 @@ dependencies = [
 [[package]]
 name = "hashtree-config"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e610635e62deb31cc36b8467402018482b9ce4ec7a5c9aa110875964835d2539"
 dependencies = [
  "anyhow",
  "dirs 5.0.1",
@@ -2597,6 +2607,8 @@ dependencies = [
 [[package]]
 name = "hashtree-core"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "043a992f05db61babbc4b9f98b9d3716b0d15b9934e248cd428e9a2faf76df61"
 dependencies = [
  "aes-gcm",
  "async-trait",
@@ -2616,6 +2628,8 @@ dependencies = [
 [[package]]
 name = "hashtree-fs"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14bd64940c3c8ca3ad51e121bbf35dc322f0afa5a85dc5b220f4be04b741abeb"
 dependencies = [
  "async-trait",
  "hashtree-core",
@@ -2628,6 +2642,8 @@ dependencies = [
 [[package]]
 name = "hashtree-index"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92f0e548224560bf39c52114b65ec9e120a459d3de0d06efb8cd5d699ace0e65"
 dependencies = [
  "futures",
  "hashtree-core",
@@ -2638,6 +2654,8 @@ dependencies = [
 [[package]]
 name = "hashtree-lmdb"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9202deabffb2dc7a4e4bb247519f51fd14fb7718f69d3a35310c15a9924001fc"
 dependencies = [
  "async-trait",
  "hashtree-core",
@@ -2647,6 +2665,8 @@ dependencies = [
 [[package]]
 name = "hashtree-network"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ba496af8acdca65f789012527b747ad3a0c34253cceb0a0fb4cee10955d35db"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2670,6 +2690,8 @@ dependencies = [
 [[package]]
 name = "hashtree-nostr"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80cf92c970510f0b288cbf314f716414c9c04e923f957359d21f60b0a9f5ba8c"
 dependencies = [
  "futures",
  "hashtree-core",
@@ -2687,6 +2709,8 @@ dependencies = [
 [[package]]
 name = "hashtree-resolver"
 version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53cd582b2f501fc9938d79a74878a53d17c9a2d9e05115dbc407387fcdc889c6"
 dependencies = [
  "async-trait",
  "hashtree-core",
@@ -3888,7 +3912,8 @@ dependencies = [
 [[package]]
 name = "nostr-social-graph"
 version = "0.1.0"
-source = "git+https://github.com/mmalmi/nostr-social-graph?rev=57213bb151578acbd512c050f0c5d89cbd021bae#57213bb151578acbd512c050f0c5d89cbd021bae"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55a5f9dfdfc4ff1d7cc162853315a1bfd50e71702f3d6754583608833db6d084"
 dependencies = [
  "hex",
  "indexmap 2.13.0",
@@ -3899,7 +3924,8 @@ dependencies = [
 [[package]]
 name = "nostr-social-graph-heed"
 version = "0.1.0"
-source = "git+https://github.com/mmalmi/nostr-social-graph?rev=57213bb151578acbd512c050f0c5d89cbd021bae#57213bb151578acbd512c050f0c5d89cbd021bae"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac39712c5edc6c858a74e798b48bd4679d646c591c428d7a579a0104cc4f1f37"
 dependencies = [
  "heed",
  "nostr-social-graph",

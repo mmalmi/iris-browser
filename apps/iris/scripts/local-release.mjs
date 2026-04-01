@@ -23,7 +23,7 @@ import {
   buildReleaseManifest,
   normalizeTag,
   parseEnvFile,
-  readWorkspaceVersionTag,
+  readCargoPackageVersionTag,
   renderReleaseNotes,
   splitCsv,
 } from './local-release-lib.mjs'
@@ -31,7 +31,7 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const appDir = resolve(__dirname, '..')
 const repoRoot = resolve(appDir, '..', '..')
-const rootCargoToml = join(repoRoot, 'rust', 'Cargo.toml')
+const appCargoToml = join(appDir, 'src-tauri', 'Cargo.toml')
 const distDir = join(repoRoot, 'dist', 'iris-native')
 const frontendDistDir = join(appDir, 'dist')
 const packagingConfig = 'src-tauri/tauri.release.no-frontend.json'
@@ -64,7 +64,7 @@ Options:
   --publish                 Publish the staged release tree with htree
   --dry-run                 Print the plan without running build or publish commands
   --skip-verify            Skip frontend verification
-  --tag <tag>              Release tag (defaults to rust workspace version, for example v0.2.14)
+  --tag <tag>              Release tag (defaults to apps/iris/src-tauri/Cargo.toml version, for example v0.2.14)
   --release-tree <name>    Mutable release tree name to publish into
   --stage-dir <path>       Directory used for staged release metadata
   --env-file <path>        Extra dotenv file to load (repeatable)
@@ -879,7 +879,7 @@ function main() {
 
   const { loaded, loadedPaths } = readOptionalEnvFiles([...defaultEnvFiles, ...options.envFiles])
   const env = { ...loaded, ...process.env }
-  const tag = options.tag || readWorkspaceVersionTag(readFileSync(rootCargoToml, 'utf8'))
+  const tag = options.tag || readCargoPackageVersionTag(readFileSync(appCargoToml, 'utf8'))
   const assetPrefix = assetPrefixForTag(tag)
   const stageDir =
     options.stageDir || join(os.tmpdir(), `iris-release-${tag.replace(/[^\w.-]/g, '_')}`)

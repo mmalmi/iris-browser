@@ -2,14 +2,12 @@
 
 Standalone workspace for the Iris native browser shell.
 
-It contains the Iris Tauri app under `apps/iris` and the vendored Rust
-Hashtree crates required to build and test the embedded daemon without the main
-`hashtree` monorepo.
+It contains the Iris Tauri app under `apps/iris`. The embedded daemon uses the
+published Hashtree Rust crates through Cargo.
 
 ## Layout
 
 - `apps/iris` - Svelte frontend, Tauri shell, Playwright/e2e tests, and local release scripts
-- `rust/crates/*` - vendored Hashtree Rust crates used by the embedded daemon
 
 ## Development
 

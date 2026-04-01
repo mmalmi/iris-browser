@@ -57,12 +57,10 @@ export function assetPrefixForTag(tag) {
   return `iris-${normalizeTag(tag)}`
 }
 
-export function readWorkspaceVersionTag(cargoTomlText) {
-  const match = cargoTomlText.match(
-    /^\[workspace\.package\][\s\S]*?^version\s*=\s*"([^"\n]+)"/m,
-  )
+export function readCargoPackageVersionTag(cargoTomlText) {
+  const match = cargoTomlText.match(/^\[package\][\s\S]*?^version\s*=\s*"([^"\n]+)"/m)
   if (!match) {
-    throw new Error('Could not find [workspace.package] version in rust/Cargo.toml')
+    throw new Error('Could not find [package] version in Cargo.toml')
   }
 
   return normalizeTag(match[1])

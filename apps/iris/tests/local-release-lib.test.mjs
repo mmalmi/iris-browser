@@ -9,6 +9,7 @@ import {
   buildReleaseManifest,
   describeAsset,
   normalizeTag,
+  readCargoPackageVersionTag,
   renderReleaseNotes,
 } from '../scripts/local-release-lib.mjs'
 
@@ -16,6 +17,17 @@ test('assetPrefixForTag normalizes the release tag', () => {
   assert.equal(assetPrefixForTag('0.2.14'), 'iris-v0.2.14')
   assert.equal(assetPrefixForTag('v0.2.14'), 'iris-v0.2.14')
   assert.equal(normalizeTag('0.2.14'), 'v0.2.14')
+})
+
+test('readCargoPackageVersionTag reads the app version from Cargo.toml', () => {
+  const cargoToml = [
+    '[package]',
+    'name = "iris"',
+    'version = "0.1.4"',
+    'edition = "2021"',
+  ].join('\n')
+
+  assert.equal(readCargoPackageVersionTag(cargoToml), 'v0.1.4')
 })
 
 test('describeAsset labels Iris desktop installers and bundles', () => {

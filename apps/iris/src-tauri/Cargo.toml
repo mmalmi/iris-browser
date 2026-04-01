@@ -33,11 +33,11 @@ tauri-plugin-iris-mobile-browser = { path = "plugins/mobile-browser" }
 tauri-plugin-iris-mobile-bluetooth = { path = "plugins/mobile-bluetooth" }
 
 # Hashtree dependencies - daemon startup + content serving
-hashtree-core = { path = "../../../rust/crates/hashtree-core" }
-hashtree-fs = { path = "../../../rust/crates/hashtree-fs" }
-hashtree-blossom = { path = "../../../rust/crates/hashtree-blossom", features = ["store"] }
-hashtree-resolver = { path = "../../../rust/crates/hashtree-resolver", features = ["nostr"] }
-hashtree-cli = { path = "../../../rust/crates/hashtree-cli", default-features = false, features = ["p2p", "lmdb"] }
+hashtree-core = "0.2.20"
+hashtree-fs = "0.2.20"
+hashtree-blossom = { version = "0.2.20", features = ["store"] }
+hashtree-resolver = { version = "0.2.20", features = ["nostr"] }
+hashtree-cli = { version = "0.2.20", default-features = false, features = ["p2p", "lmdb"] }
 tokio = { version = "1", features = ["sync", "rt-multi-thread"] }
 nostr-sdk = { version = "0.35", default-features = false }
 hex = "0.4"
