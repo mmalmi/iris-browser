@@ -255,14 +255,14 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('1 blossom read server · 2 relays')).toBeVisible();
   });
 
-  test('about tab opens the hashtree repository in Iris Git', async ({ tauriPage: page }) => {
+  test('about tab opens the iris-browser repository in Iris Git', async ({ tauriPage: page }) => {
     await openHome(page);
     await page.getByTitle('Settings').click();
 
     await page.getByRole('button', { name: 'About' }).click();
     await expect(page.getByText('Source Browser')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Open hashtree repository' }).click();
+    await page.getByRole('button', { name: 'Open Iris browser repository' }).click();
 
     await expect.poll(async () => (await getInvocationsFor(page, 'create_htree_webview')).length).toBe(1);
     const calls = await getInvocationsFor(page, 'create_htree_webview');
@@ -270,7 +270,7 @@ test.describe('Settings Page', () => {
     expect(calls[0].args.npub).toBe(DISTRIBUTED_OWNER);
     expect(calls[0].args.treename).toBe('git');
     expect(calls[0].args.path).toBe('/');
-    expect(calls[0].args.fragment).toBe(`/${DISTRIBUTED_OWNER}/hashtree`);
+    expect(calls[0].args.fragment).toBe(`/${DISTRIBUTED_OWNER}/iris-browser`);
   });
 
   test('autostart toggle sends invoke', async ({ tauriPage: page }) => {

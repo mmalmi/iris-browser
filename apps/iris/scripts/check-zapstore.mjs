@@ -7,7 +7,8 @@ const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const zapstorePath = path.join(appRoot, 'zapstore.yaml');
 const packageJsonPath = path.join(appRoot, 'package.json');
 const tauriConfigPath = path.join(appRoot, 'src-tauri/tauri.conf.json');
-const expectedRepository = 'https://github.com/mmalmi/iris-browser';
+const expectedRepository =
+  'https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser';
 const expectedIcon = 'src-tauri/gen/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png';
 const expectedReleaseSource = 'src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk';
 const expectedSummary = 'Native shell for hashtree apps with embedded htree daemon';
@@ -72,7 +73,7 @@ assert.equal(zapstore.name, tauriConfig.productName, 'Zapstore name should match
 assert.equal(zapstore.identifier, tauriConfig.identifier, 'Zapstore identifier should match Tauri identifier');
 assert.equal(zapstore.license, packageJson.license, 'Zapstore license should match package.json');
 assert.equal(zapstore.website, packageJson.homepage, 'Zapstore website should match package.json homepage');
-assert.equal(zapstore.repository, expectedRepository, 'Zapstore repository should point at the GitHub repo');
+assert.equal(zapstore.repository, expectedRepository, 'Zapstore repository should point at the canonical repo');
 assert.equal(zapstore.summary, expectedSummary, 'Zapstore summary drifted');
 assert.equal(zapstore.description, expectedSummary, 'Zapstore description drifted');
 assert.equal(zapstore.icon, expectedIcon, 'Zapstore icon should use the generated Android launcher icon');

@@ -5,7 +5,7 @@ description = "Iris - Thin native shell with embedded htree daemon"
 authors = ["Martti Malmi"]
 license = "MIT"
 repository = "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser"
-homepage = "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser/apps/iris"
+homepage = "https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/iris-browser"
 edition = "2021"
 rust-version = "1.77.2"
 
